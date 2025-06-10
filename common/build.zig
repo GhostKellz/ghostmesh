@@ -6,18 +6,19 @@ pub fn build(b: *std.Build) void {
 
     const lib = b.addStaticLibrary(.{
         .name = "common",
-        .root_source_file = .{ .path = "src/lib.zig" },
+        .root_source_file = b.path("src/lib.zig"),
         .target = target,
         .optimize = optimize,
     });
 
     b.installArtifact(lib);
 
-    // Optional: test step for your lib
-    const unit_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/lib.zig" },
+    const test_artifact = b.addTest(.{
+        .root_source_file = b.path("src/lib.zig"),
         .target = target,
         .optimize = optimize,
     });
-    b.step("test", "Run unit tests").dependOn(&b.addRunArtifact(unit_tests).step);
+
+    const run_tests = b.addRunArtifact(test_artifact);
+    b.step("test", "Run tests").dependOn(&run_tests.step);
 }
