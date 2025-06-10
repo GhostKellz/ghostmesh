@@ -45,10 +45,21 @@ pub fn main() void {
         },
     }
 
-    // Display the loaded/generated keypair
     std.debug.print("Loaded public key: {any}\n", .{keypair.public});
     std.debug.print("Loaded private key: {any}\n", .{keypair.private});
 
-    // TODO: Send registration to ghostmesh coordination server
-    std.debug.print("[TODO] Send registration to coordination server.\n", .{});
+    // --- TCP Registration to coordination server ---
+    const addr = try std.net.Address.parseIp("127.0.0.1", 9000);
+    var stream = try addr.connect(.{});
+    defer stream.close();
+
+    var hex = [_]u8{0} ** 64;
+    _ = std.fmt.bufPrint(&hex, "REGISTER:{x}", .{keypair.public}) catch {
+        std.debug.print("Hex encode error\n", .{});
+        return;
+    };
+    try stream.writer().writeAll(&hex);
+    try stream.writer().writeAll("\n");
+
+    std.debug.print("[✓] Public key sent to coordination server.\n", .{});
 }
